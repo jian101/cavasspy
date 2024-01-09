@@ -4,7 +4,7 @@ import time
 import uuid
 from typing import Optional, Iterable
 
-from jhammer.io_utils import read_mat, save_mat
+from jhammer.io import read_mat, save_mat
 
 # CAVASS build path, default in installation is ~/cavass-build.
 # If CAVASS build path is not in PATH or is not as same as default, set `CAVASS_PROFILE_PATH` to your CAVASS build path.

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="cavasspy",
-    version="3.0.0",
+    version="3.0.1",
     author="Dai Jian",
     author_email="daijian@stumail.ysu.edu.cn",
     description="CAVASS python APIs.",
@@ -19,6 +19,6 @@ setuptools.setup(
     ],
     python_requires='~=3.11',
     install_requires=[
-        'jhammer >= 2.0.0',
+        'jhammer >= 3.0.2',
     ]
 )
