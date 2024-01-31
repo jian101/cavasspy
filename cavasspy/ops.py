@@ -54,11 +54,13 @@ class ExecutionError(Exception):
 def get_image_resolution(input_file):
     """
     Get (H,W,D) resolution of input_file.
+
     Args:
-        input_file:
+        input_file (str or pathlib.Path):
 
     Returns:
     """
+
     if not os.path.exists(input_file):
         raise FileExistsError(f"{input_file} does not exist.")
     cmd = f"get_slicenumber {input_file} -s"
@@ -78,12 +80,14 @@ def get_image_resolution(input_file):
 def get_voxel_spacing(input_file):
     """
     Get spacing between voxels.
+
     Args:
-        input_file:
+        input_file (str or pathlib.Path):
 
     Returns:
 
     """
+
     if not os.path.exists(input_file):
         raise FileExistsError(f"{input_file} does not exist.")
     cmd = f"get_slicenumber {input_file} -s"
@@ -100,15 +104,22 @@ def get_voxel_spacing(input_file):
         raise ExecutionError(cmd)
 
 
-def read_cavass_file(input_file, first_slice=None, last_slice=None, sleep_time=1, ):
+def read_cavass_file(input_file, first_slice=None, last_slice=None, sleep_time=0):
     """
     Load data of input_file.
     Use the assigned slice indices if both the first slice and the last slice are given.
+
     Args:
-        sleep_time: set a sleep_time between saving and loading temp mat to avoid system IO error.
-        first_slice: Loading from the first slice (included). Load from the inferior slice to the superior slice if first_slice is None.
-        last_slice: Loading end at the last_slice (included). Load from the inferior slice to the superior slice if last_slice is None.
+        input_file (str or pathlib.Path):
+        first_slice (int or None, optional, default=None): Loading from the first slice (included). Load from the
+            inferior slice if first_slice is None.
+        last_slice (int or None, optional, default=None): Loading end at the last_slice (included). Loading ends up at
+            the superior slice if last_slice is None.
+        sleep_time (int, optional, default=0): Set a sleep_time between saving and loading temp mat to avoid system IO
+            error if necessary. Default is 0.
+
     """
+
     if not os.path.exists(input_file):
         raise FileExistsError(f"{input_file} does not exist.")
     tmp_path = "/tmp/cavass"
@@ -121,7 +132,8 @@ def read_cavass_file(input_file, first_slice=None, last_slice=None, sleep_time=1
     else:
         cvt2mat = f"exportMath {input_file} matlab {output_file} {first_slice} {last_slice}"
     execute_cmd(cvt2mat)
-    time.sleep(sleep_time)
+    if sleep_time > 0:
+        time.sleep(sleep_time)
     ct = read_mat(output_file)
     os.remove(output_file)
     return ct
@@ -141,16 +153,20 @@ def save_cavass_file(output_file,
                      spacing: Optional[Iterable] = None,
                      reference_file=None):
     """
-    Save data as CAVASS format. Do not provide spacing and reference_file at the same time.
-    Recommend to use binary for mask files and reference_file to copy all properties.
+    Save data as CAVASS format. Do not provide spacing and reference_file at the same time. Recommend to use binary for
+    mask files and reference_file to copy all properties.
+
     Args:
-        output_file:
-        data:
-        binary: Save as binary data if True.
-        size: Size for converting with dimensions of (H,W,D), default: the size of input data.
-        spacing: Spacing for converted CAVASS file with dimensions of (H,W,D), default: 1mm.
-        reference_file: Copy pose from the given file.
+        output_file (str or pathlib.Path):
+        data (numpy.ndarray):
+        binary (bool, optional, default=False): Save as binary data if True.
+        size (sequence or None, optional, default=None): Array size for converting CAVASS format. Default is None,
+            setting the shape of input data array to `size`.
+        spacing (sequence or None, optional, default=None): Voxel spacing. Default is None, set (1, 1, 1) to `spacing`.
+        reference_file (str or pathlib.Path or None, optional, default=None): If `reference_file` is given, copy pose
+            from the given file to the `output_file`.
     """
+
     assert spacing is None or reference_file is None
     if reference_file is not None:
         if not os.path.exists(reference_file):
@@ -202,9 +218,14 @@ def save_cavass_file(output_file,
 def bin_ops(input_file_1, input_file_2, output_file, op):
     """
     Execute binary operations.
+
     Args:
-        op: Supported options: or, nor, xor, xnor, and, nand, a-b
+        input_file_1 (str or pathlib.Path):
+        input_file_2 (str or pathlib.Path):
+        output_file (str or pathlib.Path):
+        op (str): `or` | `nor` | `xor` | `xnor` | `and` | `nand` | `a-b`.
     """
+
     output_dir = os.path.split(output_file)[0]
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
@@ -215,28 +236,36 @@ def bin_ops(input_file_1, input_file_2, output_file, op):
 def median2d(input_file, output_file, mode=0):
     """
     Perform median filter.
+
     Args:
-        mode: 0 for foreground, 1 for background, default is 0
+        input_file (str or pathlib.Path):
+        output_file (str or pathlib.Path):
+        mode (int, optional, default=0): 0 for foreground, 1 for background, default is 0.
     """
+
     output_dir = os.path.split(output_file)[0]
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
     execute_cmd(f"median2d {input_file} {output_file} {mode}")
 
 
-def export_math(input_file, output_file, output_file_type="matlab", first_slice=None, last_slice=None):
+def export_math(input_file, output_file, output_file_type="matlab", first_slice=-1, last_slice=-1):
     """
     Export CAVASS format file to other formats.
+
     Args:
-        input_file:
-        output_file:
-        output_file_type: Support export format: mathematica, mathlab, r, vtk.
-        first_slice:
-        last_slice: Export all slices if first slice or last slice is None
+        input_file (str or pathlib.Path):
+        output_file (str or pathlib.Path):
+        output_file_type (str, optional, default="matlab"): Support format: `mathematica` | `mathlab` | `r` | `vtk`.
+        first_slice (int, optional, default=-1): Perform from `first_slice`. If -1, `first slice` is set to 0.
+        last_slice (int, optional, default=-1): Perform ends up on `last_slice`. If -1, `last_slice` is set to the max
+            slice index of input image.
     """
-    if first_slice or last_slice is None:
+
+    first_slice = 0 if first_slice == -1 else first_slice
+    if last_slice == -1:
         resolution = get_image_resolution(input_file)
-        first_slice, last_slice = 0, resolution[2] - 1
+        last_slice = resolution[2] - 1
     output_dir = os.path.split(output_file)[0]
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
@@ -248,7 +277,12 @@ def render_surface(input_bim_file, output_file):
     Render surface of segmentation. The output file should with postfix of `BS0`.
     Note that the rendering script may be failed when saving surface file in extension disks.
     This may be caused by permission limitations and may be solved by outputting the surface file in a different disk.
+
+    Args:
+        input_bim_file (str or pathlib.Path):
+        output_file (str or pathlib.Path):
     """
+
     output_dir, file_name = os.path.split(output_file)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)

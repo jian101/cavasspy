@@ -10,12 +10,14 @@ from cavasspy.ops import execute_cmd
 def dicom2cavass(input_dir, output_file, offset_value=0):
     """
     Note that if the output file path is too long, this command may be failed.
+
     Args:
-        input_dir:
-        output_file:
-        offset_value:
+        input_dir (str or pathlib.Path):
+        output_file (str or pathlib.Path):
+        offset_value (int, optional, default=0):
 
     """
+
     file_dir, file = os.path.split(output_file)
     if not os.path.exists(file_dir):
         os.makedirs(file_dir, exist_ok=True)
@@ -26,12 +28,14 @@ def dicom2cavass(input_dir, output_file, offset_value=0):
 def nifti2cavass(input_file, output_file, offset_value=0, dicom_accession_number=1):
     """
     Convert nifti image to cavass image.
+
     Args:
-        input_file:
-        output_file:
-        offset_value:
-        dicom_accession_number:
+        input_file (str or pathlib.Path):
+        output_file (str or pathlib.Path):
+        offset_value (int, optional, default=0):
+        dicom_accession_number (int, optional, default=1):
     """
+
     save_path = os.path.split(output_file)[0]
     if not os.path.exists(save_path):
         os.makedirs(save_path, exist_ok=True)
